@@ -9,7 +9,7 @@
       var fav = document.createElement('link');
       fav.rel = 'icon';
       fav.type = 'image/svg+xml';
-      fav.href = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230e1626'/%3E%3Ctext x='50%25' y='52%25' dy='.32em' text-anchor='middle' font-family='Georgia,serif' font-weight='600' font-size='40' fill='%23cbad41'%3ES%3C/text%3E%3C/svg%3E";
+      fav.href = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23141316'/%3E%3Ctext x='50%25' y='52%25' dy='.32em' text-anchor='middle' font-family='Georgia,serif' font-weight='600' font-size='40' fill='%23b8966a'%3ES%3C/text%3E%3C/svg%3E";
       document.head.appendChild(fav);
     }
 
