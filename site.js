@@ -24,8 +24,14 @@
       var navAnchors = hdr.querySelectorAll('.navlinks a');
       for (var i = 0; i < navAnchors.length; i++) {
         navAnchors[i].addEventListener('click', function () {
-          hdr.classList.remove('nav-open');
-          menuBtn.textContent = '☰';
+          // Only close the menu for same-page (#) links. For links that
+          // navigate to another page, do NOT touch the DOM here — hiding the
+          // tapped link mid-click cancels navigation on mobile browsers.
+          var href = this.getAttribute('href') || '';
+          if (href.charAt(0) === '#') {
+            hdr.classList.remove('nav-open');
+            menuBtn.textContent = '☰';
+          }
         });
       }
     }
