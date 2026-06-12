@@ -46,12 +46,23 @@ a{color:inherit;text-decoration:none}
 img{display:block;max-width:100%}
 .wrap{max-width:1180px;margin:0 auto;padding:0 44px}
 
-/* ambient layer — mounted only into a [data-fx] section (hero + book-page top) */
-[data-fx]{position:relative}
-[data-fx] > canvas.fxc{position:absolute;inset:0;z-index:0;pointer-events:none;opacity:.95}
+/* ambient layer — one slow, quiet light. Pure CSS (transform/opacity only),
+   so it runs smoothly and identically on phone + desktop and is never tied
+   to scrolling. Mounted into a [data-fx] section (hero + book-page top). */
+[data-fx]{position:relative;overflow:hidden}
+[data-fx]::before{content:"";position:absolute;inset:-12% -12% 0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(58% 48% at 72% 28%, rgba(205,191,158,.13), transparent 62%),
+    radial-gradient(72% 62% at 10% 90%, rgba(29,44,71,.6), transparent 64%);
+  animation:fxdrift 28s var(--ease) infinite alternate;
+  will-change:transform,opacity}
 [data-fx]::after{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
-  background:radial-gradient(135% 105% at 50% 32%, transparent 52%, rgba(0,0,0,.5) 100%)}
+  background:radial-gradient(135% 100% at 50% 26%, transparent 60%, rgba(0,0,0,.4) 100%)}
 [data-fx] > .wrap{position:relative;z-index:1}
+@keyframes fxdrift{
+  from{transform:translate3d(-1.5%,-1%,0) scale(1.02);opacity:.8}
+  to{transform:translate3d(2%,1.5%,0) scale(1.06);opacity:1}
+}
 
 /* scroll progress */
 .scroll-progress{position:fixed;top:0;left:0;height:2px;width:0;z-index:60;
@@ -98,11 +109,6 @@ h2{font-family:var(--serif);font-weight:600;font-size:clamp(2.1rem,4.2vw,3.2rem)
 
 /* ---------- hero (home) ---------- */
 .hero{position:relative;min-height:100vh;display:flex;align-items:center;padding:130px 0 90px;overflow:hidden}
-.hero::before{content:"";position:absolute;inset:0;pointer-events:none;
-  background:
-    radial-gradient(760px 520px at 76% 34%, rgba(205,191,158,.1), transparent 60%),
-    radial-gradient(900px 760px at 8% 88%, rgba(29,44,71,.55), transparent 60%),
-    radial-gradient(120% 90% at 50% 0%, transparent 60%, rgba(0,0,0,.4) 100%)}
 .hero-grid{position:relative;display:grid;grid-template-columns:1.05fr .95fr;gap:64px;align-items:center;width:100%}
 .cta-row{margin-top:42px;display:flex;align-items:center;gap:28px;flex-wrap:wrap}
 
@@ -122,13 +128,6 @@ h2{font-family:var(--serif);font-weight:600;font-size:clamp(2.1rem,4.2vw,3.2rem)
 .pullquote{position:relative;font-family:var(--serif);font-style:italic;font-weight:500;
   font-size:clamp(1.7rem,3vw,2.5rem);line-height:1.34;color:var(--bone);border-left:2px solid var(--sand);padding:6px 0 6px 34px}
 .pullquote span{color:var(--sand)}
-
-/* ---------- excerpt band ---------- */
-.excerpt{text-align:center}
-.excerpt .label{font-size:11.5px;font-weight:600;letter-spacing:.4em;text-transform:uppercase;color:var(--sand);margin-bottom:30px}
-.excerpt .q{font-family:var(--serif);font-style:italic;font-weight:500;font-size:clamp(1.8rem,3.8vw,3rem);line-height:1.3;color:var(--bone);max-width:900px;margin:0 auto;letter-spacing:-.012em}
-.excerpt .q .lead{color:var(--sand)}
-.excerpt .more{margin-top:36px}
 
 /* ---------- two-column band ---------- */
 .split{display:grid;grid-template-columns:1fr 1fr;gap:68px;align-items:center}
@@ -187,11 +186,17 @@ footer{background:linear-gradient(180deg,rgba(15,24,38,0),rgba(11,18,30,.85));bo
 
 @media(prefers-reduced-motion:reduce){
   .reveal{transition:none;opacity:1;transform:none;filter:none}
+  [data-fx]::before{animation:none}
   html{scroll-behavior:auto}
 }
 
 /* ---------- responsive ---------- */
 @media(max-width:880px){
+  /* fixed background-attachment + the soft-light grain overlay both force
+     expensive recompositing on every scroll frame on iOS — drop them on
+     phones so scrolling stays smooth. */
+  body{background-attachment:scroll}
+  body::after{display:none}
   .wrap{padding:0 24px}
   .navlinks{display:none}
   .menu-btn{display:block}
