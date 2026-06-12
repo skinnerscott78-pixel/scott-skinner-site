@@ -4,7 +4,7 @@
     var y = document.getElementById('yr');
     if (y) y.textContent = new Date().getFullYear();
 
-    // Favicon — navy tile with a gold serif S
+    // Favicon — navy tile with a sand serif S
     if (!document.querySelector('link[rel="icon"]')) {
       var fav = document.createElement('link');
       fav.rel = 'icon';
@@ -45,7 +45,7 @@
       }
     }
 
-    // Scroll-progress bar (thin gold line at the top)
+    // Scroll-progress bar (thin sand line at the top)
     var bar = document.createElement('div');
     bar.className = 'scroll-progress';
     document.body.appendChild(bar);
@@ -72,70 +72,85 @@
       coverWrap.addEventListener('mouseleave', function () { cover.style.transform = rest; });
     }
 
-    // Ambient "freeway at night" light streaks behind everything —
-    // slow warm headlight + red taillight trails, like a long exposure.
+    // Ambient atmosphere — mounted only into a [data-fx] section (homepage hero
+    // + book-page top): faint, slow "freeway at night" light streaks plus a wet
+    // rain-on-glass layer. Caldecott-after-dark, kept quiet behind the text.
     (function ambient(){
+      var host = document.querySelector('[data-fx]');
+      if (!host) return;
       if (window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches) return;
       var c = document.createElement('canvas');
-      c.id = 'fxcanvas';
-      document.body.insertBefore(c, document.body.firstChild);
+      c.className = 'fxc';
+      host.insertBefore(c, host.firstChild);
       var ctx = c.getContext('2d');
-      var W, H, DPR, streaks, running = true;
+      var W, H, DPR, streaks, drops, running = true;
       function rnd(a,b){ return a + Math.random()*(b-a); }
       function size(){
         DPR = Math.min(window.devicePixelRatio || 1, 2);
-        W = c.width = Math.floor(innerWidth * DPR);
-        H = c.height = Math.floor(innerHeight * DPR);
-        c.style.width = innerWidth + 'px'; c.style.height = innerHeight + 'px';
+        var r = host.getBoundingClientRect();
+        W = c.width = Math.max(1, Math.floor(r.width * DPR));
+        H = c.height = Math.max(1, Math.floor(r.height * DPR));
+        c.style.width = r.width + 'px'; c.style.height = r.height + 'px';
       }
-      function makeStreak(spawnAcross){
+      function makeStreak(across){
         var dir = Math.random() < 0.5 ? 1 : -1;
-        var warm = Math.random() < 0.6;                 // headlights vs taillights
-        var len = rnd(140, 380) * DPR;
-        return {
-          x: spawnAcross ? rnd(0, W) : (dir > 0 ? -len : W + len),
-          y: rnd(0.06, 0.97) * H,
-          vx: rnd(2, 6) * DPR * dir,
-          drift: rnd(-0.12, 0.12) * DPR,
-          len: len,
-          w: rnd(1, 2.6) * DPR,
-          a: rnd(0.14, 0.42),
-          warm: warm
-        };
+        var warm = Math.random() < 0.6;
+        var len = rnd(130, 330) * DPR;
+        return { x: across ? rnd(0,W) : (dir>0 ? -len : W+len), y: rnd(0.05,0.95)*H,
+          vx: rnd(1.2, 3.2)*DPR*dir, drift: rnd(-0.07,0.07)*DPR, len: len,
+          w: rnd(1, 2.1)*DPR, a: rnd(0.07, 0.2), warm: warm };
+      }
+      function makeDrop(top){
+        var big = Math.random() < 0.2;
+        return { x: rnd(0,W), y: top ? rnd(-0.1,0)*H : rnd(0,H),
+          r: (big ? rnd(2.4,4.0) : rnd(1,2.3)) * DPR,
+          vy: (big ? rnd(0.5,1.05) : rnd(0.03,0.16)) * DPR,
+          a: rnd(0.035, big ? 0.12 : 0.085), warm: Math.random() < 0.22 };
       }
       function reset(){
         size();
-        var n = innerWidth < 760 ? 8 : 15;
-        streaks = [];
-        for (var i = 0; i < n; i++) streaks.push(makeStreak(true));
+        var ns = innerWidth < 760 ? 4 : 6;
+        var nd = innerWidth < 760 ? 16 : 28;
+        streaks = []; for (var i=0;i<ns;i++) streaks.push(makeStreak(true));
+        drops = []; for (var j=0;j<nd;j++) drops.push(makeDrop(false));
       }
       function frame(){
         if (!running) return;
         ctx.globalCompositeOperation = 'source-over';
-        ctx.fillStyle = 'rgba(13,20,32,0.20)';          // navy wash → motion-blur trails
-        ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = 'rgba(13,20,32,0.23)';        // navy wash → soft motion trails
+        ctx.fillRect(0,0,W,H);
         ctx.globalCompositeOperation = 'lighter';
+        // freeway light streaks
         ctx.lineCap = 'round';
-        for (var i = 0; i < streaks.length; i++){
-          var s = streaks[i];
-          s.x += s.vx; s.y += s.drift;
-          var tailX = s.x - (s.vx > 0 ? s.len : -s.len);
-          var g = ctx.createLinearGradient(s.x, s.y, tailX, s.y);
-          var head = s.warm ? '255,234,196' : '255,92,74';
-          g.addColorStop(0, 'rgba(' + head + ',' + s.a + ')');
-          g.addColorStop(0.5, 'rgba(' + head + ',' + (s.a * 0.22) + ')');
-          g.addColorStop(1, 'rgba(' + head + ',0)');
+        for (var i=0;i<streaks.length;i++){
+          var s = streaks[i]; s.x += s.vx; s.y += s.drift;
+          var tx = s.x - (s.vx>0 ? s.len : -s.len);
+          var g = ctx.createLinearGradient(s.x, s.y, tx, s.y);
+          var h = s.warm ? '255,232,194' : '255,96,80';
+          g.addColorStop(0,'rgba('+h+','+s.a+')');
+          g.addColorStop(0.5,'rgba('+h+','+(s.a*0.2)+')');
+          g.addColorStop(1,'rgba('+h+',0)');
           ctx.strokeStyle = g; ctx.lineWidth = s.w;
-          ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(tailX, s.y); ctx.stroke();
-          if ((s.vx > 0 && s.x - s.len > W) || (s.vx < 0 && s.x + s.len < 0)) streaks[i] = makeStreak(false);
+          ctx.beginPath(); ctx.moveTo(s.x,s.y); ctx.lineTo(tx,s.y); ctx.stroke();
+          if ((s.vx>0 && s.x-s.len>W) || (s.vx<0 && s.x+s.len<0)) streaks[i] = makeStreak(false);
+        }
+        // rain on glass — soft droplets drifting down (the wash leaves wet trails)
+        for (var k=0;k<drops.length;k++){
+          var d = drops[k]; d.y += d.vy;
+          var cc = d.warm ? '255,224,188' : '206,220,234';
+          var rg = ctx.createRadialGradient(d.x, d.y, 0, d.x, d.y, d.r);
+          rg.addColorStop(0,'rgba('+cc+','+d.a+')');
+          rg.addColorStop(1,'rgba('+cc+',0)');
+          ctx.fillStyle = rg;
+          ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI*2); ctx.fill();
+          if (d.y - d.r > H) drops[k] = makeDrop(true);
         }
         requestAnimationFrame(frame);
       }
       reset();
       window.addEventListener('resize', reset);
       document.addEventListener('visibilitychange', function(){
-        running = !document.hidden;
-        if (running) requestAnimationFrame(frame);
+        running = !document.hidden; if (running) requestAnimationFrame(frame);
       });
       requestAnimationFrame(frame);
     })();
@@ -154,8 +169,7 @@
       els.forEach(function (el) { el.classList.add('in'); });
     }
 
-    // Guarantee: anything already on screen at load reveals immediately,
-    // even if the observer doesn't fire on first paint.
+    // Guarantee: anything already on screen at load reveals immediately.
     var revealInView = function () {
       var vh = window.innerHeight || 800;
       els.forEach(function (el) {

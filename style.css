@@ -46,9 +46,10 @@ a{color:inherit;text-decoration:none}
 img{display:block;max-width:100%}
 .wrap{max-width:1180px;margin:0 auto;padding:0 44px}
 
-/* ambient freeway-light canvas sits behind all content */
-#fxcanvas{position:fixed;inset:0;z-index:0;pointer-events:none}
-body>main,body>footer{position:relative;z-index:1}
+/* ambient layer — mounted only into a [data-fx] section (hero + book-page top) */
+[data-fx]{position:relative}
+[data-fx] > canvas.fxc{position:absolute;inset:0;z-index:0;pointer-events:none;opacity:.72}
+[data-fx] > .wrap{position:relative;z-index:1}
 
 /* scroll progress */
 .scroll-progress{position:fixed;top:0;left:0;height:2px;width:0;z-index:60;
